@@ -57,7 +57,13 @@ process.stdin.setRawMode(true);
 process.stdin.on('keypress', function (ch, key) {
     //console.log('got "keypress"', key);
     if (key && key.name == 'c') {
-        console.log("That's all folks!")
+        console.log("That's all folks!");
+        db.close((err) => {
+            if (err) {
+                console.error(err.message);
+            }
+            console.log('Close the database connection.');
+        });
         process.stdin.pause();
     }
 });

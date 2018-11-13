@@ -1,8 +1,8 @@
 ﻿// italians_fetcher.js
 
 var cheerio = require('cheerio')
-  , request = require('request')
-  , fs = require('fs');
+    , request = require('request')
+    , fs = require('fs');
 
 // mysql connection : https://github.com/felixge/node-mysql
 
@@ -11,7 +11,7 @@ var _ = require('./lib/underscore-min.js');
 var utils = require('./lib/utils.js');
 
 var _tmp_body_name = 'body.html';
-var _connection_db;
+var _db;
 var _errorInsert = [];
 var THREAD_WILKOMMEN = '263';
 var THREAD_DISCVARIE = '80';
@@ -23,7 +23,7 @@ var _settings = {
 };
 
 exports.set_db_conection = function (conn) {
-    _connection_db = conn;
+    _db = conn;
     _errorInsert = [];
     // TODO: read _settings from db
 }
@@ -150,9 +150,9 @@ var processBody = function (body, page_ix, threadid, cb_end) {
         }
     });
     console.log("Fully recognized posts %d", arr_post.length);
-    //_.each(arr_post, function (item) {
+    // _.each(arr_post, function (item) {
     //    console.log("\nPOST \n",item);
-    //});
+    // });
 
     console.log('Last post is: ', arr_post[arr_post.length - 1]);
     console.log("Process post terminated.");
@@ -197,7 +197,7 @@ var getLastPageFromUrl = function (url) {
 }
 
 var checkDbConnection = function () {
-    if (!_connection_db) {
+    if (!_db) {
         console.error("No db connection available");
         throw "Connection error";
     }
@@ -208,21 +208,20 @@ var saveLastPageInDb = function (source_id, lastPage) {
     checkDbConnection();
 
     console.log("Save last page %d for source id %d", source_id, lastPage)
-    _connection_db.query('UPDATE iol_source SET LastPage = ? WHERE Id = ?  ',
-            [lastPage, source_id], function (err, resUpdate) {
-                if (!err) {
-                    console.log('Update OK', resUpdate.affectedRows);
-                } else {
-                    console.error("Update error %s", err);
-                }
-            });
+    _db.query('UPDATE iol_source SET LastPage = ? WHERE Id = ?  ',
+        [lastPage, source_id], function (err, resUpdate) {
+            if (!err) {
+                console.log('Update OK', resUpdate.affectedRows);
+            } else {
+                console.error("Update error %s", err);
+            }
+        });
 }
 
 var savePostsInDb = function (arr_post, cb_end) {
-    return // TOD remove
     checkDbConnection();
 
-	if(arr_post.length == 0){return;}
+    if (arr_post.length == 0) { return; }
     console.log("Start to save all post in db");
     var proc_cout = utils.proc_counter_ctor(arr_post.length, function () {
         console.log("all body posts processed");
@@ -238,7 +237,22 @@ var savePostsInDb = function (arr_post, cb_end) {
 
 var insertOrUpdateSinglePost = function (post, proc_cout) {
     var post_for_db;
-    _connection_db.query('SELECT COUNT(*) FROM iol_post WHERE post_id = ?', [post.post_id], function (err, results) {
+    _db.serialize(() => {
+        _db.get('SELECT COUNT(*) FROM iol_post WHERE post_id = ?', [post.post_id], (err, row) => {
+            if (err) {
+                console.error("Error ", err);
+                proc_cout.item_done_failed();
+                return;
+            }
+            console.log(row);
+            if (row) {
+                count = row['COUNT(*)'];
+                console.log('Count is %d for post_id %s', count, post.post_id);
+            }
+        });
+    });
+    return
+    _db.query('SELECT COUNT(*) FROM iol_post WHERE post_id = ?', [post.post_id], function (err, results) {
         if (err) {
             console.error("Error ", err);
             proc_cout.item_done_failed();
@@ -249,7 +263,7 @@ var insertOrUpdateSinglePost = function (post, proc_cout) {
         if (count === 0) {
             console.log('Want insert post with post_id ', post.post_id);
             post_for_db = getPostDataForDb(post);
-            _connection_db.query('INSERT INTO iol_post SET ?', post_for_db, function (err, resInsert) {
+            _db.query('INSERT INTO iol_post SET ?', post_for_db, function (err, resInsert) {
                 if (!err) {
                     console.log('Insert OK', resInsert.affectedRows);
                 } else {
@@ -262,7 +276,7 @@ var insertOrUpdateSinglePost = function (post, proc_cout) {
             console.log('Post %s is already in db', post.post_id);
             if (_force_update) {
                 post_for_db = getPostDataForDb(post);
-                _connection_db.query('UPDATE iol_post SET ? WHERE post_id = ?', [post_for_db, post_for_db.post_id], function (err, resUpdate) {
+                _db.query('UPDATE iol_post SET ? WHERE post_id = ?', [post_for_db, post_for_db.post_id], function (err, resUpdate) {
                     if (!err) {
                         console.log('Update OK', resUpdate.affectedRows);
                     } else {
