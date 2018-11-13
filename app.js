@@ -1,13 +1,7 @@
 // app.js
 var keypress = require('keypress');
+const sqlite3 = require('sqlite3').verbose();
 
-var mysql = require('mysql');
-var connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '!pdts123',
-    database: 'viennapostdb'
-});
 
 var italians_fetcher = require('./italians_loader.js');
 
@@ -17,9 +11,9 @@ var _lastPage = 503;
 var _currentPage = _initialPage;
 var _currentThreadId = italians_fetcher.GetThreadIdDiscVarie();
 //var _currentThreadId = italians_fetcher.GetThreadIdWilkommen();
-//var _modeProcess = "ProcessIxFile"; //"ProcessIxFile"; //"SaveFileLocal";
+var _modeProcess = "ProcessIxFile"; //"ProcessIxFile"; //"SaveFileLocal";
 // per scaricare il file scommenta questa lina
-var _modeProcess = "SaveFileLocal";
+//var _modeProcess = "SaveFileLocal";
 // INFO -- end
 
 var _fetch_end = function () {
@@ -49,34 +43,30 @@ var processNextFetch = function () {
     }
 }
 
-connection.connect(function (err) {
-    if (!err) {
-        console.log("DB connected");
 
-        italians_fetcher.set_db_conection(connection);
-        processNextFetch();
-        
-    } else {
-        console.error("DB connection error");
+let db = new sqlite3.Database('./iolvienna.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+        console.error(err.message);
     }
+    console.log('Connected to the iolvienna database.');
 });
 
 keypress(process.stdin);
 process.stdin.setRawMode(true);
 
 process.stdin.on('keypress', function (ch, key) {
-    console.log('got "keypress"', key);
+    //console.log('got "keypress"', key);
     if (key && key.name == 'c') {
-
-        connection.end(function (err) {
-            console.log("DB connection terminated");
-        });
-
+        console.log("That's all folks!")
         process.stdin.pause();
     }
 });
 
 
 process.stdin.resume();
+
+console.log(" ==> Starting the iol vienna fetcher, process mode is ", _modeProcess)
+italians_fetcher.set_db_conection(db);
+processNextFetch();
 
 
