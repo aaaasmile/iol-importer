@@ -5,10 +5,10 @@
 	"author": {
 		"name": "Igor"
 	},
-    "dependencies": {
+	"dependencies": {
 		"cheerio": "0.10.1",
-		"request": "2.11.4"
-		"keypress": "0.1.0"
-		"mysql": "2.0.0-alpha8"
+		"keypress": "0.1.0",
+		"request": "^2.88.0",
+		"sqlite3": "^4.0.4"
 	}
 }
