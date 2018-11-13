@@ -1,0 +1,14 @@
+{
+	"name": "data_fetcher",
+	"description": "Fetch data post from italian.",
+	"version": "0.0.1",
+	"author": {
+		"name": "Igor"
+	},
+    "dependencies": {
+		"cheerio": "0.10.1",
+		"request": "2.11.4"
+		"keypress": "0.1.0"
+		"mysql": "2.0.0-alpha8"
+	}
+}
