@@ -237,7 +237,8 @@ var savePostsInDb = function (arr_post, cb_end) {
 
 var insertOrUpdateSinglePost = function (post, proc_cout) {
     var post_for_db;
-    _db.serialize(() => {
+    //_db.serialize(() => {
+        let count = 0;
         _db.get('SELECT COUNT(*) FROM iol_post WHERE post_id = ?', [post.post_id], (err, row) => {
             if (err) {
                 console.error("Error ", err);
@@ -250,7 +251,26 @@ var insertOrUpdateSinglePost = function (post, proc_cout) {
                 console.log('Count is %d for post_id %s', count, post.post_id);
             }
         });
-    });
+        if (count === 0) {
+            console.log('Want insert post with post_id ', post.post_id);
+            post_for_db = getPostDataForDb(post);
+            console.log(post_for_db)
+            exit
+            //username = post_for_db.user_info ? post_for_db.user_info.name : ""
+            _db.run(`INSERT INTO iol_post (id, post_id, post_parent_id, post_content, date_published, user_name, forum_source) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [post_for_db.post_id, post_for_db.post_id, post_for_db.post_parent_id, post_for_db.post_content, post_for_db.date_published,
+                    post_for_db.user_name, post_for_db.forum_source], function (err) {
+                    if (!err) {
+                        console.log('Insert OK', this.lastID);
+                    } else {
+                        console.error("Insert error %s on post", err, post.id);
+                        _errorInsert.push(post);
+                    }
+                    proc_cout.item_done_ok();
+                });
+        }
+    //});
     return
     _db.query('SELECT COUNT(*) FROM iol_post WHERE post_id = ?', [post.post_id], function (err, results) {
         if (err) {

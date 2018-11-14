@@ -6,8 +6,9 @@ const sqlite3 = require('sqlite3').verbose();
 var italians_fetcher = require('./italians_loader.js');
 
 // INFO -- start
-var _initialPage = 503;
-var _lastPage = 503;
+var _initialPage = 10;
+var _lastPage = 10;
+//var _lastPage = 503;
 var _currentPage = _initialPage;
 var _currentThreadId = italians_fetcher.GetThreadIdDiscVarie();
 //var _currentThreadId = italians_fetcher.GetThreadIdWilkommen();
