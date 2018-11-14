@@ -6,12 +6,12 @@ const sqlite3 = require('sqlite3').verbose();
 var italians_fetcher = require('./italians_loader.js');
 
 // INFO -- start
-var _initialPage = 10;
-var _lastPage = 10;
+var _initialPage = 11;
+var _lastPage = 32;
 //var _lastPage = 503;
 var _currentPage = _initialPage;
-var _currentThreadId = italians_fetcher.GetThreadIdDiscVarie();
-//var _currentThreadId = italians_fetcher.GetThreadIdWilkommen();
+//var _currentThreadId = italians_fetcher.GetThreadIdDiscVarie();
+var _currentThreadId = italians_fetcher.GetThreadIdWilkommen();
 var _modeProcess = "ProcessIxFile"; //"ProcessIxFile"; //"SaveFileLocal";
 // per scaricare il file scommenta questa lina
 //var _modeProcess = "SaveFileLocal";

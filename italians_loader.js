@@ -269,6 +269,8 @@ var insertOrUpdateSinglePost = function (post, proc_cout) {
                         }
                         proc_cout.item_done_ok();
                     });
+            }else{
+                proc_cout.item_done_ok();
             }
         });
         
