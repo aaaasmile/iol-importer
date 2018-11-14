@@ -233,44 +233,46 @@ var savePostsInDb = function (arr_post, cb_end) {
     _.each(arr_post, function (post) {
         insertOrUpdateSinglePost(post, proc_cout);
     });
+    console.log("Save post in db terminated")
 }
 
 var insertOrUpdateSinglePost = function (post, proc_cout) {
     var post_for_db;
-    //_db.serialize(() => {
-        let count = 0;
+    _db.serialize(() => { // per non bloccare il db quando faccio un insert di massa
+        var count = 0;
         _db.get('SELECT COUNT(*) FROM iol_post WHERE post_id = ?', [post.post_id], (err, row) => {
             if (err) {
                 console.error("Error ", err);
                 proc_cout.item_done_failed();
                 return;
             }
-            console.log(row);
+            //console.log(row);
             if (row) {
                 count = row['COUNT(*)'];
                 console.log('Count is %d for post_id %s', count, post.post_id);
             }
+            if (count === 0) {
+                console.log('Want insert post with post_id ', post.post_id);
+                post_for_db = getPostDataForDb(post);
+                //console.log(post_for_db)
+            
+                //username = post_for_db.user_info ? post_for_db.user_info.name : ""
+                _db.run(`INSERT INTO iol_post (post_id, post_parent_id, post_content, date_published, user_name, forum_source) 
+                         VALUES (?, ?, ?, ?, ?, ?)`,
+                    [post_for_db.post_id, post_for_db.post_parent_id, post_for_db.post_content, post_for_db.date_published,
+                        post_for_db.user_name, post_for_db.forum_source], function (err) {
+                        if (!err) {
+                            console.log('Insert OK', this.lastID);
+                        } else {
+                            console.error("Insert error %s on post", err, post.id);
+                            _errorInsert.push(post);
+                        }
+                        proc_cout.item_done_ok();
+                    });
+            }
         });
-        if (count === 0) {
-            console.log('Want insert post with post_id ', post.post_id);
-            post_for_db = getPostDataForDb(post);
-            console.log(post_for_db)
-            exit
-            //username = post_for_db.user_info ? post_for_db.user_info.name : ""
-            _db.run(`INSERT INTO iol_post (id, post_id, post_parent_id, post_content, date_published, user_name, forum_source) 
-                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [post_for_db.post_id, post_for_db.post_id, post_for_db.post_parent_id, post_for_db.post_content, post_for_db.date_published,
-                    post_for_db.user_name, post_for_db.forum_source], function (err) {
-                    if (!err) {
-                        console.log('Insert OK', this.lastID);
-                    } else {
-                        console.error("Insert error %s on post", err, post.id);
-                        _errorInsert.push(post);
-                    }
-                    proc_cout.item_done_ok();
-                });
-        }
-    //});
+        
+    });
     return
     _db.query('SELECT COUNT(*) FROM iol_post WHERE post_id = ?', [post.post_id], function (err, results) {
         if (err) {
@@ -343,6 +345,7 @@ var parsePostId = function (elem) {
 }
 
 var parsePostDate = function (date_time_raw) {
+    //console.log('Parsing this date: ', date_time_raw)
     var post_date = null;
     var date_time_arr = date_time_raw.split('-');
     if (date_time_arr != null && date_time_arr.length >= 2) {
@@ -359,6 +362,12 @@ var parsePostDate = function (date_time_raw) {
         post_date = new Date(aa, mese - 1, gg, hh, min, 0, 0);
         //console.log("*** gg, mm, aa", gg, mese, aa);
         //console.log("***** date %s time %s, date obj %s", date_raw, time_raw, post_date);
+        //post_date = `${post_date}`
+        gg = ("0" + gg).slice(-2)
+        mese = ("0" + mese).slice(-2)
+        hh = ("0" + hh).slice(-2)
+        min = ("0" + min).slice(-2)
+        post_date = `${aa}-${mese}-${gg}T${hh}:${min}:00.000Z`   //ISO8601 strings ("YYYY-MM-DD HH:MM:SS.SSS").
     }
     return post_date;
 }
