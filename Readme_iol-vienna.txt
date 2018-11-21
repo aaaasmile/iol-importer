@@ -30,3 +30,8 @@ select user_name, date_published from playsearch inner join iol_post ON playsear
 
 Per verder chi ha scritto più post (primi 20), si usa:
 select count(id) as thecount, user_name from iol_post group by user_name ORDER BY thecount DESC LIMIT 20;
+
+Per avere i 10 post seguenti ad una data si usa:
+select date_published,id, post_content from iol_post where date_published > '2003-10-31T15:10:00.000Z' ORDER BY date_published  LIMIT(10) ;
+Da notare che se si usa 
+
