@@ -23,6 +23,8 @@
 		"babel-preset-stage-2": "^6.24.1",
 		"cheerio": "0.10.1",
 		"keypress": "0.1.0",
+		"markdown-it": "^8.4.2",
+		"markdown-react-js": "^1.0.0",
 		"meow": "^5.0.0",
 		"react": "^16.6.3",
 		"react-dom": "^16.6.3",
