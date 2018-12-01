@@ -1,11 +1,12 @@
  
- Ho riempito il db di sqlite 3 con:
- node app.js
- Il file app.js è commentato a sufficienza per capire come funziona l'import. I files html sono già scaricati,
- anche perché sul sito non sono più disponibili. Vengono importati 20803 post ditribuiti su due forum che vanno importati
- separatamente (1-503 e 1-31 pagine), che è durato più di un'ora.
- Il db l'ho preparato con sqlite3 a linea di comando usando sql direttamente lasciandomi ispirare dallo script sql 
- che avevo creato per mysql:
+Ho riempito il db di sqlite 3 con:
+node app.js
+
+Il file app.js è commentato a sufficienza per capire come funziona l'import. I files html sono già scaricati,
+anche perché sul sito non sono più disponibili. Vengono importati 20803 post ditribuiti su due forum che vanno importati
+separatamente (1-503 e 1-31 pagine), che è durato più di un'ora.
+Il db l'ho preparato con sqlite3 a linea di comando usando sql direttamente lasciandomi ispirare dallo script sql 
+che avevo creato per mysql:
 CREATE TABLE iol_source(id primary key, name);
 CREATE TABLE iol_post (id INTEGER primary key AUTOINCREMENT, post_id, post_parent_id, post_content, date_published , user_name, forum_source);
 Nota sui campi. id è un alias di rowid, che rimane. id è integer, mentre tutti gli altri sono campi di testo. date_published ho fatto in modo che
@@ -33,5 +34,10 @@ select count(id) as thecount, user_name from iol_post group by user_name ORDER B
 
 Per avere i 10 post seguenti ad una data si usa:
 select date_published,id, post_content from iol_post where date_published > '2003-10-31T15:10:00.000Z' ORDER BY date_published  LIMIT(10) ;
-Da notare che se si usa 
+
+== build di app.js
+Uso questa repository per creare app.js da app.jsx nella repository iol-service. Il comando da usare è:
+npm run build 
+La repository iol-service non usa node e webpack per compilare l'applicazione in react. È nacked senza build e module loading.
+Per far funzionare il build senza cambiare nulla, basta mettere questa repository in una directory parallela a iol-service.
 
